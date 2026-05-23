@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper Functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isSyndic() {
+      return isSignedIn() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "syndic";
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner(userId);
+    }
+
+    // Deliveries Collection
+    match /deliveries/{deliveryId} {
+      allow read: if isSignedIn() && (resource.data.residentId == request.auth.uid || isSyndic());
+      allow list: if isSignedIn() && (resource.data.residentId == request.auth.uid || isSyndic());
+      allow create: if isSyndic();
+      allow update: if isSyndic() || (resource.data.residentId == request.auth.uid && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'pickedUpAt']));
+    }
+
+    // Finances Collection
+    match /finances/{financeId} {
+      allow read: if isSyndic();
+      allow write: if isSyndic();
+    }
+
+    // Notices Collection
+    match /notices/{noticeId} {
+      allow read: if isSignedIn();
+      allow list: if isSignedIn();
+      allow write: if isSyndic();
+    }
+
+    // Bookings Collection
+    match /bookings/{bookingId} {
+      allow read: if isSignedIn() && (resource.data.residentId == request.auth.uid || isSyndic());
+      allow list: if isSignedIn() && (resource.data.residentId == request.auth.uid || isSyndic());
+      allow create: if isSignedIn() && request.resource.data.residentId == request.auth.uid;
+      allow update: if isOwner(resource.data.residentId) || isSyndic();
+      allow delete: if isOwner(resource.data.residentId) || isSyndic();
+    }
+  }
+}

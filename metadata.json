@@ -1,0 +1,8 @@
+{
+  "name": "CondoSecure",
+  "description": "Aplicativo para moradores e síndicos de condomínio com controle de entregas, financeiro, avisos e agendamentos.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

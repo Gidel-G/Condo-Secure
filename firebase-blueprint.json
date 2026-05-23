@@ -1,0 +1,104 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "Stores user roles and basic info.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["resident", "syndic", "admin"] },
+        "unit": { "type": "string", "description": "Apartment or house number" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Delivery": {
+      "title": "Delivery",
+      "description": "Package delivery status trackable by residents.",
+      "type": "object",
+      "properties": {
+        "residentId": { "type": "string" },
+        "recipientName": { "type": "string" },
+        "unit": { "type": "string" },
+        "trackingCode": { "type": "string" },
+        "courier": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "received_at_gate", "picked_up"] },
+        "receivedAt": { "type": "string", "format": "date-time" },
+        "pickedUpAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["residentId", "unit", "status", "receivedAt"]
+    },
+    "Finance": {
+      "title": "Condo Finance Summary",
+      "description": "Monthly financial summary for syndics.",
+      "type": "object",
+      "properties": {
+        "month": { "type": "string" },
+        "year": { "type": "integer" },
+        "totalIncome": { "type": "number" },
+        "totalExpenses": { "type": "number" },
+        "categories": {
+          "type": "array",
+          "properties": {
+            "category": { "type": "string" },
+            "amount": { "type": "number" }
+          }
+        },
+        "description": { "type": "string" }
+      },
+      "required": ["month", "year", "totalIncome", "totalExpenses"]
+    },
+    "Notice": {
+      "title": "Bulletin Board Notice",
+      "description": "Announcements for the whole condominium.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "type": { "type": "string", "enum": ["important", "maintenance", "event", "general"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "authorId": { "type": "string" }
+      },
+      "required": ["title", "content", "type", "createdAt"]
+    },
+    "Booking": {
+      "title": "Area Booking",
+      "description": "Scheduled use of common areas.",
+      "type": "object",
+      "properties": {
+        "area": { "type": "string" },
+        "residentId": { "type": "string" },
+        "residentName": { "type": "string" },
+        "unit": { "type": "string" },
+        "date": { "type": "string", "format": "date" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "status": { "type": "string", "enum": ["confirmed", "cancelled"] }
+      },
+      "required": ["area", "residentId", "date", "startTime", "endTime"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Public user profile information"
+    },
+    "deliveries/{deliveryId}": {
+      "schema": "Delivery",
+      "description": "Package deliveries tracking"
+    },
+    "finances/{financeId}": {
+      "schema": "Finance",
+      "description": "Monthly financial summaries"
+    },
+    "notices/{noticeId}": {
+      "schema": "Notice",
+      "description": "Condo bulletin board"
+    },
+    "bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Common area reservations"
+    }
+  }
+}
